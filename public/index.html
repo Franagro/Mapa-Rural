@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campos Iturriaga SA</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <img src="logo.png" alt="Iturriaga SA" class="login-logo-img">
+    <div class="login-sub">Delimitación de Campos · Chascomús</div>
+    <form id="loginForm">
+      <label>Usuario</label>
+      <input type="text" id="loginUser" autocomplete="username" required>
+      <label>Contraseña</label>
+      <input type="password" id="loginPass" autocomplete="current-password" required>
+      <button type="submit">Iniciar sesión</button>
+      <div id="loginError" class="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="app hidden">
+  <header class="topbar">
+    <div class="brand"><img src="logo.png" alt="Iturriaga SA" class="brand-logo">Campos Iturriaga SA</div>
+    <div class="top-actions">
+      <span id="userLabel"></span>
+      <button id="backupBtn" class="btn-ghost">Backup</button>
+      <button id="adminBtn" class="btn-ghost hidden">Usuarios</button>
+      <button id="logoutBtn" class="btn-ghost">Salir</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="draw">Dibujar</button>
+        <button class="tab-btn" data-tab="list">Lotes</button>
+        <button class="tab-btn" data-tab="clients">Clientes</button>
+      </div>
+
+      <!-- DRAW TAB -->
+      <div class="tab-panel" id="tab-draw">
+        <p class="hint">Usá las herramientas del mapa (arriba a la izquierda) para dibujar el polígono del campo sobre el satélite. Al cerrar el polígono se abre este formulario.</p>
+        <div id="drawForm" class="hidden">
+          <label>Cliente</label>
+          <select id="fieldClient"></select>
+          <button id="newClientBtn" class="btn-link" type="button">+ nuevo cliente</button>
+          <label>Nombre del lote</label>
+          <input type="text" id="fieldName" placeholder="Ej: La Elvira - Lote 3">
+          <label>Cultivo</label>
+          <input type="text" id="fieldCrop" placeholder="Ej: Maíz DK 72-10">
+          <label>Campaña</label>
+          <input type="text" id="fieldCampaign" placeholder="Ej: 2026/27">
+          <div class="area-display">Superficie: <b id="areaDisplay">-</b> ha</div>
+          <div class="partido-display" id="partidoDisplay"></div>
+          <div class="form-actions">
+            <button id="saveFieldBtn" class="btn-primary">Guardar lote</button>
+            <button id="cancelFieldBtn" class="btn-ghost">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIST TAB -->
+      <div class="tab-panel hidden" id="tab-list">
+        <input type="text" id="fieldSearch" placeholder="Buscar lote o cliente...">
+        <div id="fieldsList" class="items-list"></div>
+      </div>
+
+      <!-- CLIENTS TAB -->
+      <div class="tab-panel hidden" id="tab-clients">
+        <button id="addClientBtn" class="btn-primary full">+ Agregar cliente</button>
+        <div id="clientsList" class="items-list"></div>
+      </div>
+    </aside>
+
+    <main class="map-wrap">
+      <div id="map"></div>
+    </main>
+  </div>
+</div>
+
+<!-- Modal generico -->
+<div id="modalOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="modalTitle"></h3>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button id="modalCancel" class="btn-ghost">Cancelar</button>
+      <button id="modalOk" class="btn-primary">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/turf.js/6.5.0/turf.min.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

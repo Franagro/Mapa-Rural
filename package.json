@@ -1,0 +1,18 @@
+{
+  "name": "campos-iturriaga",
+  "version": "1.0.0",
+  "description": "Delimitacion de campos sobre satelite - Iturriaga SA",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "better-sqlite3": "^11.3.0",
+    "bcryptjs": "^2.4.3",
+    "cookie-session": "^2.1.0",
+    "express": "^4.19.2"
+  },
+  "engines": {
+    "node": "20.x"
+  }
+}
