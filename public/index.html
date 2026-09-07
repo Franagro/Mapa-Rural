@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Campos Iturriaga SA</title>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.css"/>
+<link rel="stylesheet" href="style.css"/>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen" class="login-screen">
+  <div class="login-card">
+    <img src="logo.png" alt="Iturriaga SA" class="login-logo-img">
+    <div class="login-sub">Delimitación de Campos · Chascomús</div>
+    <form id="loginForm">
+      <label>Usuario</label>
+      <input type="text" id="loginUser" autocomplete="username" required>
+      <label>Contraseña</label>
+      <input type="password" id="loginPass" autocomplete="current-password" required>
+      <button type="submit">Iniciar sesión</button>
+      <div id="loginError" class="login-error"></div>
+    </form>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="app" class="app hidden">
+  <header class="topbar">
+    <div class="brand"><img src="logo.png" alt="Iturriaga SA" class="brand-logo">Campos Iturriaga SA</div>
+    <div class="top-actions">
+      <span id="userLabel"></span>
+      <button id="backupBtn" class="btn-ghost">Backup</button>
+      <button id="adminBtn" class="btn-ghost hidden">Usuarios</button>
+      <button id="logoutBtn" class="btn-ghost">Salir</button>
+    </div>
+  </header>
+
+  <div class="layout">
+    <aside class="sidebar">
+      <div class="tabs">
+        <button class="tab-btn active" data-tab="draw">Dibujar</button>
+        <button class="tab-btn" data-tab="list">Lotes</button>
+        <button class="tab-btn" data-tab="clients">Clientes</button>
+        <button class="tab-btn" data-tab="ref">Mapas</button>
+      </div>
+
+      <!-- DRAW TAB -->
+      <div class="tab-panel" id="tab-draw">
+        <p class="hint">Usá las herramientas del mapa (arriba a la izquierda) para dibujar el polígono del campo sobre el satélite. Al cerrar el polígono se abre este formulario.</p>
+        <div id="drawForm" class="hidden">
+          <label>Cliente</label>
+          <select id="fieldClient"></select>
+          <button id="newClientBtn" class="btn-link" type="button">+ nuevo cliente</button>
+          <label>Nombre del lote</label>
+          <input type="text" id="fieldName" placeholder="Ej: La Elvira - Lote 3">
+          <label>Cultivo</label>
+          <input type="text" id="fieldCrop" placeholder="Ej: Maíz DK 72-10">
+          <label>Campaña</label>
+          <input type="text" id="fieldCampaign" placeholder="Ej: 2026/27">
+
+          <label>Status</label>
+          <input type="text" id="fieldStatus" placeholder="Ej: nombre corto / referencia">
+          <label>Status 1</label>
+          <input type="text" id="fieldStatus1" placeholder="Ej: LNA, AFUERA...">
+          <label>Status 2</label>
+          <input type="text" id="fieldStatus2" placeholder="Opcional">
+          <label>Status 3</label>
+          <input type="text" id="fieldStatus3" placeholder="Opcional">
+
+          <label>Color en el mapa</label>
+          <div class="color-picker" id="colorPicker">
+            <span class="swatch" data-color="#52C22F" style="background:#52C22F"></span>
+            <span class="swatch" data-color="#00E5E5" style="background:#00E5E5"></span>
+            <span class="swatch" data-color="#E53935" style="background:#E53935"></span>
+            <span class="swatch" data-color="#FDD835" style="background:#FDD835"></span>
+            <span class="swatch" data-color="#8E24AA" style="background:#8E24AA"></span>
+            <span class="swatch" data-color="#FB8C00" style="background:#FB8C00"></span>
+            <span class="swatch" data-color="#9E9E9E" style="background:#9E9E9E"></span>
+            <span class="swatch" data-color="#FFFFFF" style="background:#FFFFFF; border:1px solid #ccc;"></span>
+            <input type="color" id="fieldColorCustom" value="#52C22F" title="Color personalizado">
+          </div>
+
+          <div class="area-display">Superficie: <b id="areaDisplay">-</b> ha</div>
+          <div class="partido-display" id="partidoDisplay"></div>
+          <div class="form-actions">
+            <button id="saveFieldBtn" class="btn-primary">Guardar lote</button>
+            <button id="cancelFieldBtn" class="btn-ghost">Cancelar</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- LIST TAB -->
+      <div class="tab-panel hidden" id="tab-list">
+        <button id="openTableBtn" class="btn-ghost full" type="button" style="margin-bottom:10px;">📋 Ver tabla completa</button>
+        <input type="text" id="fieldSearch" placeholder="Buscar lote o cliente...">
+        <div id="fieldsList" class="items-list"></div>
+      </div>
+
+      <!-- CLIENTS TAB -->
+      <div class="tab-panel hidden" id="tab-clients">
+        <button id="addClientBtn" class="btn-primary full">+ Agregar cliente</button>
+        <div id="clientsList" class="items-list"></div>
+      </div>
+
+      <!-- MAPAS DE REFERENCIA (georreferenciacion) -->
+      <div class="tab-panel hidden" id="tab-ref">
+        <p class="hint">Subí la foto de un mapa rural impreso y encajala a mano sobre el satélite: arrastrá los 3 puntos de anclaje (🔴 arriba-izq, 🟢 arriba-der, 🔵 abajo-izq) hasta que coincidan con los mismos lugares reales en el mapa. Usá la opacidad para comparar.</p>
+        <input type="file" id="refImageInput" accept="image/*">
+        <div id="refUploadStatus" class="hint"></div>
+        <div id="refActiveControls" class="hidden" style="margin-top:12px;">
+          <label>Nombre de este mapa</label>
+          <input type="text" id="refName" placeholder="Ej: Mapa rural Lezama">
+          <label>Opacidad</label>
+          <input type="range" id="refOpacitySlider" min="10" max="100" value="70">
+          <div class="form-actions">
+            <button id="refSaveBtn" class="btn-primary">Guardar posición</button>
+            <button id="refDiscardBtn" class="btn-ghost">Descartar</button>
+          </div>
+        </div>
+        <div class="hint" style="margin-top:14px;">Mapas guardados:</div>
+        <div id="refList" class="items-list"></div>
+      </div>
+    </aside>
+
+    <main class="map-wrap">
+      <div id="map"></div>
+      <div class="opacity-control" id="opacityControl">
+        <div class="opacity-row">
+          <label for="opacitySlider">Opacidad lotes</label>
+          <input type="range" id="opacitySlider" min="10" max="100" value="55">
+          <span id="opacityValue">55%</span>
+        </div>
+        <div class="opacity-row">
+          <label for="catastroOpacitySlider">Opacidad catastro</label>
+          <input type="range" id="catastroOpacitySlider" min="10" max="100" value="90">
+          <span id="catastroOpacityValue">90%</span>
+        </div>
+      </div>
+    </main>
+  </div>
+</div>
+
+<!-- TABLA COMPLETA (overlay) -->
+<div id="tableView" class="table-view hidden">
+  <div class="table-view-header">
+    <div class="table-view-title">📋 Tabla de lotes</div>
+    <button id="closeTableBtn" class="btn-ghost">✕ Cerrar</button>
+  </div>
+  <div class="table-filters" id="tableFilters">
+    <input type="text" data-filter="name" placeholder="Nombre">
+    <input type="text" data-filter="client" placeholder="Cliente">
+    <input type="text" data-filter="area_ha" placeholder="Has">
+    <input type="text" data-filter="crop" placeholder="Cultivo">
+    <input type="text" data-filter="status" placeholder="Status">
+    <input type="text" data-filter="status1" placeholder="Status1">
+    <input type="text" data-filter="status2" placeholder="Status2">
+    <input type="text" data-filter="status3" placeholder="Status3">
+    <input type="text" data-filter="partido" placeholder="Partido">
+    <button id="clearFiltersBtn" class="btn-ghost">Limpiar</button>
+  </div>
+  <div class="table-scroll">
+    <table id="dataTable">
+      <thead>
+        <tr>
+          <th data-sort="name">Nombre</th>
+          <th data-sort="client">Cliente</th>
+          <th data-sort="area_ha">Has</th>
+          <th data-sort="crop">Cultivo</th>
+          <th data-sort="campaign">Campaña</th>
+          <th data-sort="status">Status</th>
+          <th data-sort="status1">Status1</th>
+          <th data-sort="status2">Status2</th>
+          <th data-sort="status3">Status3</th>
+          <th data-sort="partido">Partido</th>
+          <th>Color</th>
+          <th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody id="dataTableBody"></tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Modal generico -->
+<div id="modalOverlay" class="modal-overlay hidden">
+  <div class="modal">
+    <h3 id="modalTitle"></h3>
+    <div id="modalBody"></div>
+    <div class="modal-actions">
+      <button id="modalCancel" class="btn-ghost">Cancelar</button>
+      <button id="modalOk" class="btn-primary">Aceptar</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.draw/1.0.4/leaflet.draw.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/turf.js/6.5.0/turf.min.js"></script>
+<script src="leaflet-imageoverlay-rotated.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
